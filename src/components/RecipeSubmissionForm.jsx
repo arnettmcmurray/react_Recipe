@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./RecipeSubmissionForm.css";
 
 function RecipeSubmissionForm() {
@@ -11,10 +11,22 @@ function RecipeSubmissionForm() {
     category: "",
     cuisine: "",
     ingredients: [{ name: "", quantity: "", unit: "" }],
+    instructions: [""],
     image: "",
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(null);
+
+  // === load saved data on mount ===
+  useEffect(() => {
+    const saved = localStorage.getItem("recipeForm");
+    if (saved) setFormData(JSON.parse(saved));
+  }, []);
+
+  // === save to localStorage anytime form changes ===
+  useEffect(() => {
+    localStorage.setItem("recipeForm", JSON.stringify(formData));
+  }, [formData]);
 
   // === field updates ===
   const handleChange = (e) => {
@@ -43,6 +55,26 @@ function RecipeSubmissionForm() {
     setFormData((prev) => ({ ...prev, ingredients: list }));
   };
 
+  // === instruction updates ===
+  const handleInstructionChange = (index, e) => {
+    const list = [...formData.instructions];
+    list[index] = e.target.value;
+    setFormData((prev) => ({ ...prev, instructions: list }));
+  };
+
+  const addInstruction = () => {
+    setFormData((prev) => ({
+      ...prev,
+      instructions: [...prev.instructions, ""],
+    }));
+  };
+
+  const removeInstruction = (index) => {
+    const list = [...formData.instructions];
+    list.splice(index, 1);
+    setFormData((prev) => ({ ...prev, instructions: list }));
+  };
+
   // === inline validation ===
   const validate = () => {
     const err = {};
@@ -60,6 +92,9 @@ function RecipeSubmissionForm() {
       if (!ing.quantity) err[`quantity-${i}`] = "Missing quantity.";
       if (!ing.unit) err[`unit-${i}`] = "Select unit.";
     });
+    formData.instructions.forEach((step, i) => {
+      if (!step.trim()) err[`instruction-${i}`] = "Step cannot be empty.";
+    });
     setErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -69,6 +104,7 @@ function RecipeSubmissionForm() {
     e.preventDefault();
     if (validate()) {
       setSubmitted(formData);
+      localStorage.removeItem("recipeForm");
       // reset
       setFormData({
         title: "",
@@ -78,6 +114,7 @@ function RecipeSubmissionForm() {
         category: "",
         cuisine: "",
         ingredients: [{ name: "", quantity: "", unit: "" }],
+        instructions: [""],
         image: "",
       });
       setErrors({});
@@ -188,13 +225,30 @@ function RecipeSubmissionForm() {
               <option value="g">g</option>
               <option value="pcs">pcs</option>
             </select>
-            <button type="button" onClick={() => removeIngredient(i)}></button>
+            <button type="button" onClick={() => removeIngredient(i)}>
+              ❌
+            </button>
           </div>
         ))}
-        {errors.ingredients && <p className="error">{errors.ingredients}</p>}
-
         <button type="button" onClick={addIngredient}>
           ➕ Add Ingredient
+        </button>
+
+        <h3>Instructions</h3>
+        {formData.instructions.map((step, i) => (
+          <div key={i} className="ingredient-row">
+            <textarea
+              placeholder={`Step ${i + 1}`}
+              value={step}
+              onChange={(e) => handleInstructionChange(i, e)}
+            />
+            <button type="button" onClick={() => removeInstruction(i)}>
+              ❌
+            </button>
+          </div>
+        ))}
+        <button type="button" onClick={addInstruction}>
+          ➕ Add Step
         </button>
 
         <label>Image URL</label>
@@ -208,6 +262,54 @@ function RecipeSubmissionForm() {
         <button type="submit">Submit Recipe</button>
       </form>
 
+      {/* === live preview section === */}
+      <div className="recipe-summary">
+        <h3>Live Preview</h3>
+        {formData.image && (
+          <img
+            src={formData.image}
+            alt="preview"
+            style={{
+              width: "100%",
+              borderRadius: "8px",
+              marginBottom: "1rem",
+            }}
+          />
+        )}
+        <p>
+          <strong>Title:</strong> {formData.title || "—"}
+        </p>
+        <p>
+          <strong>Servings:</strong> {formData.servings || "—"}
+        </p>
+        <p>
+          <strong>Difficulty:</strong> {formData.difficulty || "—"}
+        </p>
+        <p>
+          <strong>Category:</strong> {formData.category || "—"}
+        </p>
+        <p>
+          <strong>Cuisine:</strong> {formData.cuisine || "—"}
+        </p>
+        <h4>Ingredients</h4>
+        <ul>
+          {formData.ingredients.map((ing, i) =>
+            ing.name ? (
+              <li key={i}>
+                {ing.quantity} {ing.unit} {ing.name}
+              </li>
+            ) : null
+          )}
+        </ul>
+        <h4>Instructions</h4>
+        <ol>
+          {formData.instructions.map(
+            (step, i) => step && <li key={i}>{step}</li>
+          )}
+        </ol>
+      </div>
+
+      {/* === submitted summary === */}
       {submitted && (
         <div className="recipe-summary">
           <h3>{submitted.title}</h3>
@@ -245,6 +347,12 @@ function RecipeSubmissionForm() {
               </li>
             ))}
           </ul>
+          <h4>Instructions</h4>
+          <ol>
+            {submitted.instructions.map((step, i) => (
+              <li key={i}>{step}</li>
+            ))}
+          </ol>
         </div>
       )}
     </div>
