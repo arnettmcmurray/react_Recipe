@@ -1,31 +1,61 @@
 .recipe-form {
   display: flex;
   flex-direction: column;
+  width: 100%;
   max-width: 600px;
-  margin: 2rem auto;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: #f8f8f8;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.ingredient-row {
-  display: flex;
-  gap: 0.5rem;
+  padding: 2rem;
+  background: transparent;
+  border: none;
+  color: inherit;
 }
 
 .recipe-form input,
 .recipe-form textarea,
-.recipe-form select,
-.recipe-form button {
-  padding: 0.5rem;
-  font-size: 1rem;
+.recipe-form select {
+  margin-top: 0.25rem;
+  padding: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  background: rgba(20, 20, 20, 0.5);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
 }
 
-.recipe-form button[type="button"] {
-  cursor: pointer;
-  background: #eee;
+body.light-mode .recipe-form input,
+body.light-mode .recipe-form textarea,
+body.light-mode .recipe-form select {
+  background: #ffffff;
+  color: #111;
   border: 1px solid #ccc;
-  border-radius: 4px;
+}
+
+.recipe-form label {
+  font-weight: 500;
+  margin-top: 0.75rem;
+}
+
+.recipe-form button[type="submit"] {
+  margin-top: 1.5rem;
+  padding: 0.75rem;
+  background: #f44336;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.recipe-form button[type="submit"]:hover {
+  background: #d32f2f;
+}
+
+body.light-mode .recipe-form button[type="submit"] {
+  background: #007bff;
+  color: #fff;
+}
+
+body.light-mode .recipe-form button[type="submit"]:hover {
+  background: #0056b3;
 }
